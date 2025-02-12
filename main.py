@@ -7,6 +7,7 @@ import torchvision.transforms as transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import joblib
 
 dataset_root = "./data"
 transform = transforms.Compose([
@@ -25,7 +26,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = FERCNN(num_classes=len(train_dataset.classes)).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-epochs = 20
+epochs = 10
 
 for epoch in range(epochs):
     model.train()
@@ -35,9 +36,13 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
-        loss.backward() 
+        loss.backward()     
         optimizer.step()
         running_loss += loss.item()
     print(f"Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}")
 
 print("Finished Training")
+
+model_filename = "FER-CNN.pkl"
+joblib.dump(model, model_filename)
+print(f"💾 Model saved as {model_filename}")
